@@ -30,26 +30,36 @@ def mk_save_dir(path):
 def convert_image(source_path, target_path):
     file_names = os.listdir(source_path)
     for file_name in file_names:
-        # 获取规范的路径
-        domain = os.path.abspath(source_path)
-        # 带路径的文件名
-        file_name = os.path.join(domain, file_name)
-        # 如果是文件夹进入递归
-        if os.path.isdir(file_name):
-            child_source_dir = target_path + file_name.split('/')[-1]
-            # 子文件夹，在目标文件夹里新建一个
-            mk_save_dir(child_source_dir)
-            # 递归
-            convert_image(file_name, child_source_dir + '/')
+        try:
+            # 获取规范的路径
+            domain = os.path.abspath(source_path)
+            # 带路径的文件名
+            file_name = os.path.join(domain, file_name)
+            # 如果是文件夹进入递归
+            if os.path.isdir(file_name):
+                child_source_dir = target_path + file_name.split('/')[-1]
+                # 子文件夹，在目标文件夹里新建一个
+                mk_save_dir(child_source_dir)
+                # 递归
+                convert_image(file_name, child_source_dir + '/')
+                continue
+
+            # 非图片，跳过
+            if not file_name.lower().endswith(
+                    ('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
+                print(file_name + " is not image file")
+                continue
+
+            source_image = Image.open(file_name)
+            save_path = target_path + file_name.split('/')[-1]
+            # 保存修改尺寸后的图片，ANTIALIAS 去锯齿
+            source_image.resize(size, Image.ANTIALIAS).convert('RGB').save(save_path)
+        except OSError:
+            print("OSError for transform " + file_name)
             continue
-        # 非图片，跳过
-        if not file_name.lower().endswith(
-                ('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')):
+        except:
+            print("Error for transform " + file_name)
             continue
-        source_image = Image.open(file_name)
-        save_path = target_path + file_name.split('/')[-1]
-        # 保存修改尺寸后的图片，ANTIALIAS 去锯齿
-        source_image.resize(size, Image.ANTIALIAS).convert('RGB').save(save_path)
 
 
 if __name__ == '__main__':
